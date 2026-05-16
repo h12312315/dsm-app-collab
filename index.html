@@ -21,9 +21,9 @@
   <!-- Main Content -->
   <main class="main-content proto-viewer">
     <div class="proto-toggle">
-      <button class="proto-toggle-btn active" data-target="prototype-7">Full app</button>
-      <button class="proto-toggle-btn" data-target="prototype-notified">Notify</button>
+      <button class="proto-toggle-btn active" data-target="prototype-7">Plan</button>
       <button class="proto-toggle-btn" data-target="prototype-collab">Collaborate</button>
+      <button class="proto-toggle-btn" data-target="prototype-ontrip">On-trip</button>
     </div>
 
     <!-- Overview -->
@@ -1592,6 +1592,14 @@
     <section id="prototype-collab" class="section page" data-page="prototype-collab">
       <div class="proto-phone">
         <div class="proto-screen p7-screen" id="p7CollabScreenSlot">
+        </div>
+      </div>
+    </section>
+
+    <!-- On-trip — reuses p7App DOM by slot-swap, starts on map view -->
+    <section id="prototype-ontrip" class="section page" data-page="prototype-ontrip">
+      <div class="proto-phone">
+        <div class="proto-screen p7-screen" id="p7OntripScreenSlot">
         </div>
       </div>
     </section>
@@ -4009,7 +4017,7 @@
   </div>
 
   <script src="assets/world-bitmap.js"></script>
-  <script src="script.js?v=41"></script>
+  <script src="script.js?v=43"></script>
   <script>
     document.querySelectorAll('.proto-toggle-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -4018,6 +4026,8 @@
         navigateTo(btn.dataset.target);
       });
     });
+    // Auto-navigate to the first toggle on load
+    navigateTo(document.querySelector('.proto-toggle-btn.active').dataset.target);
 
     // Agent dropdown toggles (home + trip detail)
     [['p7HomeAgentBtn','p7HomeAgentDropdown'],['p7TripAgentBtn','p7TripAgentDropdown']].forEach(function(pair) {

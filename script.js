@@ -59,15 +59,21 @@ function navigateTo(pageId) {
     setTimeout(() => { if (typeof initProtoTamagochi === 'function') initProtoTamagochi(); }, 200);
   }
 
-  // Auto-init Proto 7 full app when navigating to prototype-7
+  // Auto-init Proto 7 "Plan" — starts on create trip flow step 1
   if (pageId === 'prototype-7') {
     var p7App = document.getElementById('p7App');
     var originalSlot = document.getElementById('p7OriginalSlot');
     if (p7App) p7App.classList.remove('p7-collab-mode');
+    if (p7App) p7App.classList.remove('p7-ontrip-mode');
     if (p7App && originalSlot && p7App.parentElement !== originalSlot) {
       originalSlot.appendChild(p7App);
     }
-    setTimeout(() => { if (typeof initProto7 === 'function') initProto7(); }, 300);
+    setTimeout(function() {
+      if (typeof initProto7 === 'function') initProto7();
+      // Switch to create view at step 1
+      if (window.p7SwitchView) window.p7SwitchView('create');
+      if (window.p7GoToStepGlobal) window.p7GoToStepGlobal(0, 1);
+    }, 300);
   }
 
   // Proto 7 Pixel — reuses p7App DOM, just swaps container + adds theme class
@@ -80,15 +86,38 @@ function navigateTo(pageId) {
     setTimeout(() => { if (typeof initProto7 === 'function') initProto7(); }, 300);
   }
 
-  // Collaborate — also reuses p7App DOM by slot-swap
+  // Collaborate — reuses p7App DOM, starts on trip detail page
   if (pageId === 'prototype-collab') {
     var p7AppC = document.getElementById('p7App');
     var collabSlot = document.getElementById('p7CollabScreenSlot');
     if (p7AppC) p7AppC.classList.add('p7-collab-mode');
+    if (p7AppC) p7AppC.classList.remove('p7-ontrip-mode');
     if (p7AppC && collabSlot && p7AppC.parentElement !== collabSlot) {
       collabSlot.appendChild(p7AppC);
     }
-    setTimeout(() => { if (typeof initProto7 === 'function') initProto7(); }, 300);
+    setTimeout(function() {
+      if (typeof initProto7 === 'function') initProto7();
+      // Open first trip detail
+      setTimeout(function() {
+        var firstTrip = document.querySelector('#p7HomeTrips > :first-child');
+        if (firstTrip) firstTrip.click();
+      }, 200);
+    }, 300);
+  }
+
+  // On-trip — reuses p7App DOM, starts on map view
+  if (pageId === 'prototype-ontrip') {
+    var p7AppOt = document.getElementById('p7App');
+    var ontripSlot = document.getElementById('p7OntripScreenSlot');
+    if (p7AppOt) p7AppOt.classList.remove('p7-collab-mode');
+    if (p7AppOt) p7AppOt.classList.add('p7-ontrip-mode');
+    if (p7AppOt && ontripSlot && p7AppOt.parentElement !== ontripSlot) {
+      ontripSlot.appendChild(p7AppOt);
+    }
+    setTimeout(function() {
+      if (typeof initProto7 === 'function') initProto7();
+      if (window.p7SwitchView) window.p7SwitchView('map');
+    }, 300);
   }
 
   // Auto-init Notified for Action when navigating to prototype-notified
@@ -4029,6 +4058,7 @@ function initProto7() {
   }
 
   window.p7SwitchView = switchView;
+  window.p7GoToStepGlobal = function(idx, dir) { if (typeof p7GoToStep === 'function') p7GoToStep(idx, dir); };
 
   // Tab click handlers (order: Home, Map, +, Thread, Calendar, Trips)
   app.querySelector('.p7-tab[data-p7tab="home"]').addEventListener('click', function() { switchView('home'); });
