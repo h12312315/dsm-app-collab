@@ -6095,6 +6095,22 @@ function initProto7() {
   var p7TripOrigMonth, p7TripOrigYear; // the actual trip month/year
 
   function p7PopulateFinalPlan() {
+    // Always default to calendar (preparation) tab, unless collab mode uses thread
+    var isCollabMode = document.getElementById('p7App').classList.contains('p7-collab-mode');
+    var defTab = isCollabMode ? 'thread' : 'preparation';
+    var tripTabsEl = document.getElementById('p7TripTabs');
+    if (tripTabsEl) {
+      tripTabsEl.querySelectorAll('.p7-trip-tab').forEach(function(t) {
+        t.classList.toggle('p7-trip-tab-active', t.getAttribute('data-triptab') === defTab);
+      });
+    }
+    var tripPage = tripTabsEl ? tripTabsEl.closest('.p7-page-inner') || tripTabsEl.closest('.p7-page') : null;
+    if (tripPage) {
+      tripPage.querySelectorAll('.p7-trip-tab-content').forEach(function(c) {
+        c.classList.toggle('p7-trip-tab-content-active', c.getAttribute('data-triptabcontent') === defTab);
+      });
+    }
+
     // If opened from trip card, state is already set — just render
     if (p7FromTripCard) {
       p7FromTripCard = false;
@@ -6265,7 +6281,11 @@ function initProto7() {
     }
 
     if (!events.length) {
-      var msg = isTripMonth ? 'No reminders on this day' : 'No reminders this month';
+      var msg = 'No reminders this month';
+      if (isTripMonth && p7TripSelectedDay !== null) {
+        var isTripDay = p7TripSelectedDay >= p7TripStartDay && p7TripSelectedDay < p7TripStartDay + p7TripDur;
+        msg = isTripDay ? 'Traveling day. No reminders' : 'No reminders on this day';
+      }
       eventsEl.innerHTML = '<div class="p7-trips-empty"><span class="p7-trips-empty-icon">\uD83D\uDCC5</span>' + msg + '</div>';
       return;
     }
@@ -8080,22 +8100,6 @@ function initProto7() {
     if (daysBadge) {
       var tripDuration = trip.duration || 10;
       daysBadge.textContent = tripDuration + ' day' + (tripDuration === 1 ? '' : 's');
-    }
-
-    // Reset active trip tab based on mode
-    var isCollab = document.getElementById('p7App').classList.contains('p7-collab-mode');
-    var defaultTab = isCollab ? 'thread' : 'preparation';
-    var tripTabsEl = document.getElementById('p7TripTabs');
-    if (tripTabsEl) {
-      tripTabsEl.querySelectorAll('.p7-trip-tab').forEach(function(t) {
-        t.classList.toggle('p7-trip-tab-active', t.getAttribute('data-triptab') === defaultTab);
-      });
-    }
-    var tripPage = tripTabsEl ? tripTabsEl.closest('.p7-page-inner') || tripTabsEl.closest('.p7-page') : null;
-    if (tripPage) {
-      tripPage.querySelectorAll('.p7-trip-tab-content').forEach(function(c) {
-        c.classList.toggle('p7-trip-tab-content-active', c.getAttribute('data-triptabcontent') === defaultTab);
-      });
     }
 
     // Show the create flow on step 6 (trip detail)

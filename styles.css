@@ -11309,6 +11309,9 @@ html {
 }
 .p7-trip-cal-body .p7-cal-day-trip,
 .p7-trip-cal-body .p7-cal-day-trip:hover { color: #fff !important; }
+.p7-trip-cal-body .p7-cal-day-trip:hover {
+  background: #5B21B6 !important;
+}
 /* Rounded end caps on the start/end days of the trip span */
 .p7-trip-cal-body .p7-cal-day-trip-start {
   border-top-left-radius: var(--radius-sm);
