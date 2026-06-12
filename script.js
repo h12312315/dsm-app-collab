@@ -7105,6 +7105,149 @@ function initProto7() {
   });
 
   // ---- ITINERARY TAB ----
+  var p7ItinDayFillers = [
+    [
+      { emoji: '\u2615', name: 'Coffee at local caf\u00E9', time: '8:30 AM' },
+      { emoji: '\u26E9\uFE0F', name: 'Visit historic shrine', time: '10:00 AM' },
+      { emoji: '\uD83C\uDF5C', name: 'Ramen lunch in Shinjuku', time: '12:30 PM' },
+      { emoji: '\uD83D\uDECD\uFE0F', name: 'Shopping in Harajuku', time: '2:30 PM' },
+      { emoji: '\uD83C\uDF05', name: 'Sunset at observation deck', time: '5:00 PM' },
+      { emoji: '\uD83C\uDF76', name: 'Izakaya dinner', time: '7:30 PM' }
+    ],
+    [
+      { emoji: '\uD83C\uDF38', name: 'Morning garden walk', time: '9:00 AM' },
+      { emoji: '\uD83C\uDFA8', name: 'Art gallery visit', time: '11:00 AM' },
+      { emoji: '\uD83C\uDF63', name: 'Sushi lunch at market', time: '1:00 PM' },
+      { emoji: '\uD83D\uDEB6', name: 'Old town walking tour', time: '3:00 PM' },
+      { emoji: '\uD83C\uDFAD', name: 'Cultural performance', time: '5:30 PM' },
+      { emoji: '\uD83C\uDF77', name: 'Wine bar & tapas', time: '8:00 PM' }
+    ],
+    [
+      { emoji: '\uD83C\uDFDE\uFE0F', name: 'Day trip to coast', time: '8:00 AM' },
+      { emoji: '\uD83D\uDDFC', name: 'Landmark sightseeing', time: '10:30 AM' },
+      { emoji: '\uD83E\uDD58', name: 'Seafood lunch', time: '12:30 PM' },
+      { emoji: '\uD83C\uDFDB\uFE0F', name: 'Museum afternoon', time: '2:30 PM' },
+      { emoji: '\uD83C\uDF0A', name: 'Beach sunset', time: '5:00 PM' },
+      { emoji: '\uD83C\uDF55', name: 'Street food dinner', time: '7:00 PM' }
+    ],
+    [
+      { emoji: '\uD83E\uDDD8', name: 'Morning yoga session', time: '7:30 AM' },
+      { emoji: '\uD83C\uDF3F', name: 'Botanical garden', time: '10:00 AM' },
+      { emoji: '\uD83C\uDF71', name: 'Bento box lunch', time: '12:00 PM' },
+      { emoji: '\uD83D\uDED2', name: 'Local market exploration', time: '2:00 PM' },
+      { emoji: '\u2668\uFE0F', name: 'Hot spring / spa', time: '4:30 PM' },
+      { emoji: '\uD83C\uDF7B', name: 'Rooftop bar evening', time: '7:30 PM' }
+    ]
+  ];
+
+  function p7RenderItinerary(itinerary) {
+    var resultEl = document.getElementById('p7ItineraryResult');
+    var timeSlots = ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM', '7:00 PM'];
+    var fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var html = '';
+    Object.keys(itinerary).forEach(function(dayNum, dayIdx) {
+      html += '<div class="p7-itin-day" data-itin-day="' + dayNum + '">';
+      html += '<div class="p7-itin-day-label">Day ' + (dayIdx + 1) + ' \u00B7 ' + fullMonthNames[p7TripCalMonth].substring(0, 3) + ' ' + dayNum + '</div>';
+      html += '<div class="p7-itin-day-items">';
+      itinerary[dayNum].forEach(function(item, itemIdx) {
+        var time = item.time || timeSlots[itemIdx % timeSlots.length];
+        html += '<div class="p7-itin-item" draggable="true" data-itin-idx="' + itemIdx + '">';
+        html += '<span class="p7-itin-drag" title="Drag to reorder">&#x2630;</span>';
+        html += '<span class="p7-itin-time">' + time + '</span>';
+        html += '<span class="p7-itin-emoji">' + item.emoji + '</span>';
+        html += '<span class="p7-itin-name">' + item.name + '</span>';
+        html += '<button class="p7-itin-delete" title="Remove">&times;</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<button class="p7-itin-add-btn" data-itin-addday="' + dayNum + '">+ Add activity</button>';
+      html += '</div>';
+    });
+    resultEl.innerHTML = html;
+    p7InitItinDrag();
+  }
+
+  // Drag & drop reorder
+  function p7InitItinDrag() {
+    var resultEl = document.getElementById('p7ItineraryResult');
+    var dragItem = null;
+    var placeholder = null;
+
+    resultEl.addEventListener('dragstart', function(e) {
+      var item = e.target.closest('.p7-itin-item');
+      if (!item) return;
+      dragItem = item;
+      item.classList.add('p7-itin-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+    });
+
+    resultEl.addEventListener('dragend', function() {
+      if (dragItem) dragItem.classList.remove('p7-itin-dragging');
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      dragItem = null;
+      placeholder = null;
+      resultEl.querySelectorAll('.p7-itin-item').forEach(function(el) { el.classList.remove('p7-itin-dragover'); });
+    });
+
+    resultEl.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (!dragItem) return;
+      var target = e.target.closest('.p7-itin-item');
+      if (!target || target === dragItem) return;
+      var container = target.closest('.p7-itin-day-items');
+      if (!container) return;
+      var rect = target.getBoundingClientRect();
+      var midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        container.insertBefore(dragItem, target);
+      } else {
+        container.insertBefore(dragItem, target.nextSibling);
+      }
+    });
+
+    resultEl.addEventListener('drop', function(e) {
+      e.preventDefault();
+    });
+
+    // Delete buttons
+    resultEl.addEventListener('click', function(e) {
+      var delBtn = e.target.closest('.p7-itin-delete');
+      if (delBtn) {
+        var item = delBtn.closest('.p7-itin-item');
+        if (item) {
+          item.style.transition = 'opacity 0.2s, transform 0.2s';
+          item.style.opacity = '0';
+          item.style.transform = 'translateX(20px)';
+          setTimeout(function() { item.remove(); }, 200);
+        }
+        return;
+      }
+      // Add activity buttons
+      var addBtn = e.target.closest('.p7-itin-add-btn');
+      if (addBtn) {
+        var dayNum = addBtn.getAttribute('data-itin-addday');
+        var dayItems = addBtn.previousElementSibling;
+        if (!dayItems) return;
+        var newItem = document.createElement('div');
+        newItem.className = 'p7-itin-item p7-itin-item-new';
+        newItem.draggable = true;
+        var count = dayItems.querySelectorAll('.p7-itin-item').length;
+        var slots = ['9:00 AM', '10:30 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM', '8:00 PM'];
+        newItem.innerHTML = '<span class="p7-itin-drag" title="Drag to reorder">&#x2630;</span>'
+          + '<span class="p7-itin-time">' + slots[count % slots.length] + '</span>'
+          + '<span class="p7-itin-emoji">\uD83D\uDCCD</span>'
+          + '<span class="p7-itin-name" contenteditable="true" data-placeholder="Type activity..."></span>'
+          + '<button class="p7-itin-delete" title="Remove">&times;</button>';
+        dayItems.appendChild(newItem);
+        setTimeout(function() { newItem.classList.remove('p7-itin-item-new'); }, 10);
+        var nameEl = newItem.querySelector('.p7-itin-name');
+        if (nameEl) nameEl.focus();
+      }
+    });
+  }
+
   document.getElementById('p7GenerateItinerary').addEventListener('click', function() {
     document.getElementById('p7ItineraryEmpty').style.display = 'none';
     document.getElementById('p7ItineraryLoading').style.display = 'block';
@@ -7116,47 +7259,32 @@ function initProto7() {
 
       // Build itinerary from trip events
       var itinerary = {};
-      var dur = Math.min(p7TripDur, 7); // show max 7 days
+      var dur = Math.min(p7TripDur, 7);
       for (var d = 0; d < dur; d++) {
         var dayNum = p7TripStartDay + d;
         var daysInMonth = new Date(p7TripCalYear, p7TripCalMonth + 1, 0).getDate();
         if (dayNum > daysInMonth) break;
         itinerary[dayNum] = [];
 
-        // Add events from that day
         var dayEvts = p7TripEvents[dayNum] || [];
         dayEvts.forEach(function(ev) {
           itinerary[dayNum].push({ emoji: ev.emoji, name: ev.name });
         });
 
-        // Fill empty days with generic activities
-        if (itinerary[dayNum].length === 0) {
-          var fillers = [
-            { emoji: '\uD83C\uDF05', name: 'Morning exploration' },
-            { emoji: '\uD83C\uDF5C', name: 'Local cuisine lunch' },
-            { emoji: '\uD83D\uDEB6', name: 'Neighborhood walk' },
-          ];
-          itinerary[dayNum] = [fillers[d % fillers.length]];
+        // Fill to at least 4 items per day using robust fillers
+        var fillerSet = p7ItinDayFillers[d % p7ItinDayFillers.length];
+        var fillerIdx = 0;
+        while (itinerary[dayNum].length < 4 && fillerIdx < fillerSet.length) {
+          var filler = fillerSet[fillerIdx];
+          var exists = itinerary[dayNum].some(function(x) { return x.name === filler.name; });
+          if (!exists) {
+            itinerary[dayNum].push({ emoji: filler.emoji, name: filler.name, time: filler.time });
+          }
+          fillerIdx++;
         }
       }
 
-      var timeSlots = ['9:00 AM', '11:00 AM', '1:00 PM', '3:00 PM', '5:00 PM', '7:00 PM'];
-      var html = '';
-      var fullMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      Object.keys(itinerary).forEach(function(dayNum, dayIdx) {
-        html += '<div class="p7-itin-day">';
-        html += '<div class="p7-itin-day-label">Day ' + (dayIdx + 1) + ' \u00B7 ' + fullMonthNames[p7TripCalMonth].substring(0, 3) + ' ' + dayNum + '</div>';
-        itinerary[dayNum].forEach(function(item, itemIdx) {
-          var time = timeSlots[itemIdx % timeSlots.length];
-          html += '<div class="p7-itin-item">';
-          html += '<span class="p7-itin-time">' + time + '</span>';
-          html += '<span class="p7-itin-emoji">' + item.emoji + '</span>';
-          html += '<span class="p7-itin-name">' + item.name + '</span>';
-          html += '</div>';
-        });
-        html += '</div>';
-      });
-      resultEl.innerHTML = html;
+      p7RenderItinerary(itinerary);
     }, 2000);
   });
 
