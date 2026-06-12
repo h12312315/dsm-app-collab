@@ -81,6 +81,7 @@
   justify-content: center;
   flex: 1;
   min-height: 0;
+  width: 100%;
 }
 
 /* === Thread (inline in home + trip detail) === */
@@ -1251,14 +1252,18 @@ html {
   height: 780px;
 }
 
-/* Auto-fit phone to viewport in proto-viewer */
-.proto-viewer .proto-phone,
-.proto-viewer .page.active .proto-phone {
-  height: auto;
+/* Auto-fit phone to viewport in proto-viewer — scale with ratio preserved */
+.proto-viewer .proto-phone-wrap {
   flex: 1;
-  max-height: calc(100vh - 80px);
-  max-height: calc(100dvh - 80px);
-  margin-bottom: 16px;
+  min-height: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+}
+.proto-viewer .proto-phone {
+  transform-origin: top center;
+  flex-shrink: 0;
 }
 
 .proto-screen {

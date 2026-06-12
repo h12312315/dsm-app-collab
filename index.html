@@ -15,7 +15,7 @@
   </script>
   <link rel="stylesheet" href="system.css">
   <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="styles.css?v=44">
+  <link rel="stylesheet" href="styles.css?v=46">
 </head>
 <body>
   <!-- Main Content -->
@@ -49,7 +49,7 @@
 
     <!-- Prototype 7 — Full App -->
     <section id="prototype-7" class="section page" data-page="prototype-7">
-      <div class="proto-phone">
+      <div class="proto-phone-wrap"><div class="proto-phone">
         <div class="proto-screen p7-screen" id="p7OriginalSlot">
           <div class="p7-app" id="p7App">
             <!-- Status Bar -->
@@ -1584,24 +1584,24 @@
 
           </div>
         </div>
-      </div>
+      </div></div>
 
     </section>
 
     <!-- Prototype Collaborate — Duplicate of Full App for collaboration features (shares p7App DOM) -->
     <section id="prototype-collab" class="section page" data-page="prototype-collab">
-      <div class="proto-phone">
+      <div class="proto-phone-wrap"><div class="proto-phone">
         <div class="proto-screen p7-screen" id="p7CollabScreenSlot">
         </div>
-      </div>
+      </div></div>
     </section>
 
     <!-- On-trip — reuses p7App DOM by slot-swap, starts on map view -->
     <section id="prototype-ontrip" class="section page" data-page="prototype-ontrip">
-      <div class="proto-phone">
+      <div class="proto-phone-wrap"><div class="proto-phone">
         <div class="proto-screen p7-screen" id="p7OntripScreenSlot">
         </div>
-      </div>
+      </div></div>
     </section>
 
     <!-- Prototype Tamagochi (V5) — Pixel-art travel companion -->
@@ -1609,7 +1609,7 @@
     <!-- Prototype 7 Pixel — Full App with Pixel Art theme (shares p7App DOM) -->
 
     <section id="prototype-notified" class="section page" data-page="prototype-notified">
-      <div class="proto-phone">
+      <div class="proto-phone-wrap"><div class="proto-phone">
         <div class="proto-screen p7-screen">
           <div class="pn-app" id="pnApp">
             <div class="proto-status-bar p7-status-bar">
@@ -1865,7 +1865,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div></div>
     </section>
 
     <!-- Prototype 7S — Social Entry -->
@@ -4044,6 +4044,36 @@
     document.addEventListener('click', function() {
       document.querySelectorAll('.p7-home-agent-dropdown, .p7-trip-agent-dropdown').forEach(function(d) { d.classList.remove('open'); });
     });
+
+    // Scale phone frames to fit viewport while preserving aspect ratio
+    function scalePhones() {
+      document.querySelectorAll('.proto-phone-wrap').forEach(function(wrap) {
+        var phone = wrap.querySelector('.proto-phone');
+        if (!phone) return;
+        // Reset scale to measure natural size
+        phone.style.transform = '';
+        var availH = wrap.clientHeight;
+        var availW = wrap.clientWidth;
+        var phoneH = phone.offsetHeight;
+        var phoneW = phone.offsetWidth;
+        if (!phoneH || !availH) return;
+        var scaleH = availH / phoneH;
+        var scaleW = availW / phoneW;
+        var scale = Math.min(scaleH, scaleW, 1); // never scale up
+        phone.style.transform = 'scale(' + scale + ')';
+        phone.style.transformOrigin = 'top center';
+      });
+    }
+    window.addEventListener('resize', scalePhones);
+    // Run after navigateTo settles
+    var origNavigate = window.navigateTo;
+    if (origNavigate) {
+      window.navigateTo = function() {
+        origNavigate.apply(this, arguments);
+        setTimeout(scalePhones, 400);
+      };
+    }
+    setTimeout(scalePhones, 500);
   </script>
 </body>
 </html>
