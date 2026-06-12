@@ -25,6 +25,7 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
+  height: 100dvh;
   background: #f0f0f0;
   overflow: hidden;
 }
@@ -35,8 +36,9 @@
   padding: 4px;
   background: #e0e0e0;
   border-radius: 10px;
-  margin-top: 24px;
-  margin-bottom: 20px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .proto-toggle-btn {
@@ -65,10 +67,20 @@
 .proto-viewer .section {
   margin-bottom: 0;
 }
+.proto-viewer .page.active > .section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+  width: 100%;
+}
 
 .proto-viewer .page.active {
   display: flex;
   justify-content: center;
+  flex: 1;
+  min-height: 0;
 }
 
 /* === Thread (inline in home + trip detail) === */
@@ -1237,6 +1249,16 @@ html {
   display: flex;
   flex-direction: column;
   height: 780px;
+}
+
+/* Auto-fit phone to viewport in proto-viewer */
+.proto-viewer .proto-phone,
+.proto-viewer .page.active .proto-phone {
+  height: auto;
+  flex: 1;
+  max-height: calc(100vh - 80px);
+  max-height: calc(100dvh - 80px);
+  margin-bottom: 16px;
 }
 
 .proto-screen {
