@@ -15,11 +15,12 @@
   </script>
   <link rel="stylesheet" href="system.css">
   <link rel="stylesheet" href="theme.css">
-  <link rel="stylesheet" href="styles.css?v=48">
+  <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body>
   <!-- Main Content -->
   <main class="main-content proto-viewer">
+    <div class="proto-viewer-inner">
     <div class="proto-toggle">
       <button class="proto-toggle-btn active" data-target="prototype-7">Plan</button>
       <button class="proto-toggle-btn" data-target="prototype-collab">Collaborate</button>
@@ -3996,7 +3997,7 @@
       </div>
     </section>
 
-
+    </div>
   </main>
 
   <!-- Live Modal -->
@@ -4047,21 +4048,27 @@
 
     // Scale phone frames to fit viewport while preserving aspect ratio
     function scalePhones() {
+      var toggle = document.querySelector('.proto-toggle');
+      var toggleH = toggle ? toggle.offsetHeight : 0;
+      var toggleMargin = 28; // top + bottom margin of toggle
+      var bottomPad = 32;
+      var availH = window.innerHeight - toggleH - toggleMargin - bottomPad;
+      var availW = window.innerWidth * 0.95;
+
       document.querySelectorAll('.proto-phone-wrap').forEach(function(wrap) {
         var phone = wrap.querySelector('.proto-phone');
         if (!phone) return;
-        // Reset scale to measure natural size
         phone.style.transform = '';
-        var availH = wrap.clientHeight;
-        var availW = wrap.clientWidth;
         var phoneH = phone.offsetHeight;
         var phoneW = phone.offsetWidth;
         if (!phoneH || !availH) return;
         var scaleH = availH / phoneH;
         var scaleW = availW / phoneW;
-        var scale = Math.min(scaleH, scaleW, 1); // never scale up
+        var scale = Math.min(scaleH, scaleW, 1);
         phone.style.transform = 'scale(' + scale + ')';
         phone.style.transformOrigin = 'top center';
+        // Set wrap height to scaled phone height so centering works
+        wrap.style.height = (phoneH * scale) + 'px';
       });
     }
     window.addEventListener('resize', scalePhones);
